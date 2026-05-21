@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+  "name": "Calendar Picker",
+  "version": "1.0",
+  "description": "Picker daty i godziny w bocznym panelu",
+
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+
+  "sidebar_action": {
+    "default_title": "Calendar Picker",
+    "default_panel": "sidebar.html",
+    "default_icon": "icons/icon.svg"
+  },
+
+  "permissions": [
+    "clipboardWrite"
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "calendar-picker@local",
+      "strict_min_version": "109.0"
+    }
+  }
+}
