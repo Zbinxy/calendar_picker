@@ -219,6 +219,10 @@ function getAggregatedText() {
 
     case 3:
       return [...new Set(stack.map(it => it.dateStr))].join(', ');
+
+    case 4:
+      return [...new Map(stack.map(it => [it.dateStr, it])).values()]
+        .map(it => `${it.dateStr} (${it.dayName})`).join(', ');
   }
   return '';
 }
@@ -255,7 +259,7 @@ function renderStackSection() {
 
 function aggregate() {
   if (stack.length === 0) return;
-  aggregateLevel = (aggregateLevel + 1) % 4;
+  aggregateLevel = (aggregateLevel + 1) % 5;
   renderStackSection();
 }
 
