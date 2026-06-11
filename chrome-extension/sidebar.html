@@ -332,19 +332,16 @@
       <h2 id="monthLabel"></h2>
       <button class="nav-btn" id="nextMonth">&#8250;</button>
     </div>
-    <div class="cal-weekdays">
-      <span>Pn</span><span>Wt</span><span>Śr</span>
-      <span>Cz</span><span>Pt</span><span>So</span><span>Nd</span>
-    </div>
+    <div class="cal-weekdays" id="calWeekdays"></div>
     <div class="cal-grid" id="calGrid"></div>
   </div>
 
   <!-- TIME PICKER -->
   <div class="card time-picker">
-    <h3>Godzina rozpoczęcia</h3>
+    <h3 id="timePickerLabel"></h3>
     <div class="time-scroll" id="timeScroll"></div>
     <div class="duration-row">
-      <label>Czas trwania:</label>
+      <label id="durationLabel"></label>
       <select class="duration-select" id="durationSelect">
         <option value="15">15 min</option>
         <option value="30">30 min</option>

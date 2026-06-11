@@ -1,11 +1,53 @@
-const MONTHS_PL = [
-  'Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
-  'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'
-];
-const DAYS_PL = [
-  'niedziela','poniedziałek','wtorek','środa',
-  'czwartek','piątek','sobota'
-];
+const LANG = {
+  pl: {
+    timePickerLabel: 'Godzina rozpoczęcia',
+    durationLabel:   'Czas trwania:',
+    placeholder:     'Wybierz datę i godzinę…',
+    addBtn:          '+ Dodaj',
+    aggregateBtn:    'Agreguj',
+    copyBtn:         'Kopiuj',
+    copiedBtn:       'Skopiowano!',
+    minUnit:         'min',
+    titleStrike:     'Przekreślenie',
+  },
+  en: {
+    timePickerLabel: 'Start time',
+    durationLabel:   'Duration:',
+    placeholder:     'Select date and time…',
+    addBtn:          '+ Add',
+    aggregateBtn:    'Aggregate',
+    copyBtn:         'Copy',
+    copiedBtn:       'Copied!',
+    minUnit:         'min',
+    titleStrike:     'Strike-through',
+  },
+  de: {
+    timePickerLabel: 'Startzeit',
+    durationLabel:   'Dauer:',
+    placeholder:     'Datum und Uhrzeit wählen…',
+    addBtn:          '+ Hinzufügen',
+    aggregateBtn:    'Zusammenfassen',
+    copyBtn:         'Kopieren',
+    copiedBtn:       'Kopiert!',
+    minUnit:         'Min.',
+    titleStrike:     'Durchgestrichen',
+  },
+  fr: {
+    timePickerLabel: 'Heure de début',
+    durationLabel:   'Durée :',
+    placeholder:     'Sélectionnez date et heure…',
+    addBtn:          '+ Ajouter',
+    aggregateBtn:    'Agréger',
+    copyBtn:         'Copier',
+    copiedBtn:       'Copié !',
+    minUnit:         'min',
+    titleStrike:     'Barré',
+  },
+};
+
+const langCode = (navigator.language || 'en').slice(0, 2).toLowerCase();
+const locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode] || 'en-US';
+const t        = LANG[langCode] || LANG['en'];
 
 let viewYear, viewMonth;
 let selectedDate    = null;
@@ -20,6 +62,7 @@ const today = new Date();
 function init() {
   viewYear  = today.getFullYear();
   viewMonth = today.getMonth();
+  applyLang();
   renderCalendar();
   renderTimeSlots();
   document.getElementById('prevMonth').addEventListener('click', () => shiftMonth(-1));
@@ -45,6 +88,30 @@ function init() {
   });
 }
 
+function applyLang() {
+  document.getElementById('timePickerLabel').textContent = t.timePickerLabel;
+  document.getElementById('durationLabel').textContent   = t.durationLabel;
+  document.getElementById('addBtn').textContent          = t.addBtn;
+  document.getElementById('aggregateBtn').textContent    = t.aggregateBtn;
+  document.getElementById('copyBtn').textContent         = t.copyBtn;
+  document.getElementById('strikeBtn').title             = t.titleStrike;
+  document.querySelectorAll('#durationSelect option').forEach(opt => {
+    opt.textContent = `${opt.value} ${t.minUnit}`;
+  });
+  renderWeekdays();
+}
+
+function renderWeekdays() {
+  const container = document.getElementById('calWeekdays');
+  container.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(2024, 0, 1 + i); // Mon 1 Jan 2024 … Sun 7 Jan 2024
+    const span = document.createElement('span');
+    span.textContent = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+    container.appendChild(span);
+  }
+}
+
 function shiftMonth(delta) {
   viewMonth += delta;
   if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
@@ -53,8 +120,9 @@ function shiftMonth(delta) {
 }
 
 function renderCalendar() {
+  const monthName = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(viewYear, viewMonth, 1));
   document.getElementById('monthLabel').textContent =
-    `${MONTHS_PL[viewMonth]} ${viewYear}`;
+    monthName.charAt(0).toUpperCase() + monthName.slice(1) + ' ' + viewYear;
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -156,7 +224,7 @@ function updateResult() {
   const addBtn   = document.getElementById('addBtn');
 
   if (!selectedDate) {
-    resultEl.innerHTML = '<span class="result-placeholder">Wybierz datę i godzinę…</span>';
+    resultEl.innerHTML = `<span class="result-placeholder">${t.placeholder}</span>`;
     resultEl.style.fontSize = '';
     resultEl.style.fontWeight = '';
     resultEl.style.opacity = '';
@@ -167,8 +235,7 @@ function updateResult() {
   }
 
   const { year, month, day } = selectedDate;
-  const dow     = new Date(year, month, day).getDay();
-  const dayName = DAYS_PL[dow];
+  const dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(year, month, day));
   const dateStr = pad(day) + '.' + pad(month + 1) + '.' + year;
 
   if (selectedMinutes !== null) {
@@ -186,7 +253,7 @@ function updateResult() {
 function updateCopyBtn() {
   const copyBtn = document.getElementById('copyBtn');
   copyBtn.disabled = !(stack.length > 0 || selectedDate !== null);
-  if (!copyBtn.disabled) { copyBtn.textContent = 'Kopiuj'; copyBtn.classList.remove('copied'); }
+  if (!copyBtn.disabled) { copyBtn.textContent = t.copyBtn; copyBtn.classList.remove('copied'); }
 }
 
 /* ── STACK ── */
@@ -194,9 +261,8 @@ function updateCopyBtn() {
 function addToStack() {
   if (!selectedDate || stack.length >= 10) return;
   const { year, month, day } = selectedDate;
-  const dow     = new Date(year, month, day).getDay();
+  const dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(year, month, day));
   const dateStr = pad(day) + '.' + pad(month + 1) + '.' + year;
-  const dayName = DAYS_PL[dow];
   let entry;
   if (selectedMinutes !== null) {
     const duration = parseInt(document.getElementById('durationSelect').value, 10);
@@ -319,10 +385,10 @@ function copyResult() {
     promise = navigator.clipboard.write([item]);
   }
   promise.then(() => {
-    btn.textContent = 'Skopiowano!';
+    btn.textContent = t.copiedBtn;
     btn.classList.add('copied');
     setTimeout(() => {
-      btn.textContent = 'Kopiuj';
+      btn.textContent = t.copyBtn;
       btn.classList.remove('copied');
     }, 2000);
   });
