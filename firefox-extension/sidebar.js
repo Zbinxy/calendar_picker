@@ -414,10 +414,11 @@ stor.get('lang').then(result => {
   init();
 });
 
-storageApi.onChanged.addListener((changes, area) => {
-  if (area !== 'local' || !changes.lang) return;
-  langCode = changes.lang.newValue || (navigator.language || 'en').slice(0, 2).toLowerCase();
-  if (!LANG[langCode]) langCode = 'en';
+function applyStoredLang(code) {
+  const next = code || (navigator.language || 'en').slice(0, 2).toLowerCase();
+  const resolved = LANG[next] ? next : 'en';
+  if (resolved === langCode) return;
+  langCode = resolved;
   locale = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode];
   t = LANG[langCode];
   stack.forEach(it => {
@@ -427,4 +428,15 @@ storageApi.onChanged.addListener((changes, area) => {
   renderCalendar();
   updateResult();
   if (stack.length > 0) renderStackSection();
+}
+
+storageApi.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !('lang' in changes)) return;
+  applyStoredLang(changes.lang.newValue);
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    stor.get('lang').then(r => applyStoredLang(r.lang));
+  }
 });
