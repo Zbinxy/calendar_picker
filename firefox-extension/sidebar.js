@@ -403,10 +403,28 @@ function minsToTime(m) {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-const stor = typeof browser !== 'undefined' ? browser.storage.local : chrome.storage.local;
+const stor       = typeof browser !== 'undefined' ? browser.storage.local : chrome.storage.local;
+const storageApi = typeof browser !== 'undefined' ? browser.storage      : chrome.storage;
+
 stor.get('lang').then(result => {
   langCode = result.lang || (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (!LANG[langCode]) langCode = 'en';
   locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode] || 'en-US';
-  t        = LANG[langCode] || LANG['en'];
+  t        = LANG[langCode];
   init();
+});
+
+storageApi.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !changes.lang) return;
+  langCode = changes.lang.newValue || (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (!LANG[langCode]) langCode = 'en';
+  locale = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode];
+  t = LANG[langCode];
+  stack.forEach(it => {
+    it.dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(it.year, it.month, it.day));
+  });
+  applyLang();
+  renderCalendar();
+  updateResult();
+  if (stack.length > 0) renderStackSection();
 });
