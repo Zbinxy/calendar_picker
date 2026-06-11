@@ -51,6 +51,28 @@
       color: #a78bfa;
     }
 
+    .lang-btns {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .lang-btn {
+      background: #2d3148;
+      border: 1px solid #3d4268;
+      color: #6b7280;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lang-btn:hover { background: #3d4268; color: #e2e8f0; }
+    .lang-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+
     .nav-btn {
       background: #2d3148;
       border: none;
@@ -356,6 +378,12 @@
 
   <!-- CALENDAR -->
   <div class="card calendar">
+    <div class="lang-btns">
+      <button class="lang-btn" data-lang="pl">PL</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="de">DE</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
     <div class="cal-header">
       <button class="nav-btn" id="prevMonth">&#8249;</button>
       <h2 id="monthLabel"></h2>
@@ -418,9 +446,10 @@
     fr: { timePickerLabel: 'Heure de début',        durationLabel: 'Durée :',        placeholder: 'Sélectionnez date et heure…', addBtn: '+ Ajouter', aggregateBtn: 'Agréger',   copyBtn: 'Copier',  copiedBtn: 'Copié !',      minUnit: 'min', titleStrike: 'Barré' },
   };
 
-  const langCode = (navigator.language || 'en').slice(0, 2).toLowerCase();
-  const locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode] || 'en-US';
-  const t        = LANG[langCode] || LANG['en'];
+  let langCode = localStorage.getItem('lang') || (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (!LANG[langCode]) langCode = 'en';
+  let locale = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode];
+  let t      = LANG[langCode];
 
   let viewYear, viewMonth;
   let selectedDate = null;
@@ -453,12 +482,31 @@
         if (stack.length > 0) applyPreviewFormat(document.getElementById('stackOutput'));
       });
     });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === langCode);
+      btn.addEventListener('click', () => switchLang(btn.dataset.lang));
+    });
     document.getElementById('strikeBtn').addEventListener('click', () => {
       strikethrough = !strikethrough;
       document.getElementById('strikeBtn').classList.toggle('active', strikethrough);
       updateResult();
       if (stack.length > 0) applyPreviewFormat(document.getElementById('stackOutput'));
     });
+  }
+
+  function switchLang(code) {
+    langCode = code;
+    locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode];
+    t        = LANG[langCode];
+    localStorage.setItem('lang', langCode);
+    stack.forEach(it => {
+      it.dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(it.year, it.month, it.day));
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === langCode));
+    applyLang();
+    renderCalendar();
+    updateResult();
+    if (stack.length > 0) renderStackSection();
   }
 
   function applyLang() {
