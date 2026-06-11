@@ -96,6 +96,9 @@ function applyLang() {
   document.querySelectorAll('#durationSelect option').forEach(opt => {
     opt.textContent = `${opt.value} ${t.minUnit}`;
   });
+  if (!selectedDate) {
+    document.getElementById('resultText').innerHTML = `<span class="result-placeholder">${t.placeholder}</span>`;
+  }
   renderWeekdays();
 }
 
