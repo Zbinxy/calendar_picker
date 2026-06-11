@@ -221,10 +221,11 @@ function applyPreviewFormat(el) {
 }
 
 function updateResult() {
-  const resultEl = document.getElementById('resultText');
-  const addBtn   = document.getElementById('addBtn');
+  const resultEl  = document.getElementById('resultText');
+  const addBtn    = document.getElementById('addBtn');
+  const duration  = parseInt(document.getElementById('durationSelect').value, 10);
 
-  if (!selectedDate) {
+  if (!selectedDate && selectedMinutes === null) {
     resultEl.innerHTML = `<span class="result-placeholder">${t.placeholder}</span>`;
     resultEl.style.fontSize = '';
     resultEl.style.fontWeight = '';
@@ -235,12 +236,19 @@ function updateResult() {
     return;
   }
 
+  if (!selectedDate) {
+    resultEl.textContent = `${minsToTime(selectedMinutes)}-${minsToTime(selectedMinutes + duration)}`;
+    applyPreviewFormat(resultEl);
+    addBtn.disabled = true;
+    updateCopyBtn();
+    return;
+  }
+
   const { year, month, day } = selectedDate;
   const dayName = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(year, month, day));
   const dateStr = pad(day) + '.' + pad(month + 1) + '.' + year;
 
   if (selectedMinutes !== null) {
-    const duration = parseInt(document.getElementById('durationSelect').value, 10);
     resultEl.textContent = `${dateStr} (${dayName}) ${minsToTime(selectedMinutes)}-${minsToTime(selectedMinutes + duration)}`;
   } else {
     resultEl.textContent = `${dateStr} (${dayName})`;
@@ -253,7 +261,7 @@ function updateResult() {
 
 function updateCopyBtn() {
   const copyBtn = document.getElementById('copyBtn');
-  copyBtn.disabled = !(stack.length > 0 || selectedDate !== null);
+  copyBtn.disabled = !(stack.length > 0 || selectedDate !== null || selectedMinutes !== null);
   if (!copyBtn.disabled) { copyBtn.textContent = t.copyBtn; copyBtn.classList.remove('copied'); }
 }
 

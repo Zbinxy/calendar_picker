@@ -638,13 +638,22 @@
   function updateResult() {
     const resultEl = document.getElementById('resultText');
     const addBtn   = document.getElementById('addBtn');
+    const duration = parseInt(document.getElementById('durationSelect').value, 10);
 
-    if (!selectedDate) {
+    if (!selectedDate && selectedMinutes === null) {
       resultEl.innerHTML = `<span class="result-placeholder">${t.placeholder}</span>`;
       resultEl.style.fontSize = '';
       resultEl.style.fontWeight = '';
       resultEl.style.opacity = '';
       resultEl.style.textDecoration = '';
+      addBtn.disabled = true;
+      updateCopyBtn();
+      return;
+    }
+
+    if (!selectedDate) {
+      resultEl.textContent = `${minsToTime(selectedMinutes)}-${minsToTime(selectedMinutes + duration)}`;
+      applyPreviewFormat(resultEl);
       addBtn.disabled = true;
       updateCopyBtn();
       return;
@@ -656,7 +665,6 @@
 
     let result;
     if (selectedMinutes !== null) {
-      const duration = parseInt(document.getElementById('durationSelect').value, 10);
       result = `${dateStr} (${dayName}) ${minsToTime(selectedMinutes)}-${minsToTime(selectedMinutes + duration)}`;
     } else {
       result = `${dateStr} (${dayName})`;
@@ -670,7 +678,7 @@
 
   function updateCopyBtn() {
     const copyBtn = document.getElementById('copyBtn');
-    copyBtn.disabled = !(stack.length > 0 || selectedDate !== null);
+    copyBtn.disabled = !(stack.length > 0 || selectedDate !== null || selectedMinutes !== null);
     if (!copyBtn.disabled) { copyBtn.textContent = t.copyBtn; copyBtn.classList.remove('copied'); }
   }
 
