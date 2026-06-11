@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calendar Picker — Language</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 24px;
+      min-width: 280px;
+    }
+    h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    select {
+      background: #2d3148;
+      border: 1px solid #3d4268;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+      width: 100%;
+      cursor: pointer;
+      outline: none;
+      margin-bottom: 14px;
+    }
+    select:focus { border-color: #7c3aed; }
+    .row { display: flex; align-items: center; gap: 12px; }
+    button {
+      background: #7c3aed;
+      border: none;
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    button:hover { background: #6d28d9; }
+    #status { font-size: 0.8rem; color: #059669; }
+  </style>
+</head>
+<body>
+  <h2>Language / Język / Sprache / Langue</h2>
+  <label for="langSelect">Display language:</label>
+  <select id="langSelect">
+    <option value="">Auto (browser default)</option>
+    <option value="pl">Polski</option>
+    <option value="en">English</option>
+    <option value="de">Deutsch</option>
+    <option value="fr">Français</option>
+  </select>
+  <div class="row">
+    <button id="saveBtn">Save</button>
+    <span id="status"></span>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

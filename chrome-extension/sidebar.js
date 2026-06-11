@@ -45,9 +45,7 @@ const LANG = {
   },
 };
 
-const langCode = (navigator.language || 'en').slice(0, 2).toLowerCase();
-const locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode] || 'en-US';
-const t        = LANG[langCode] || LANG['en'];
+let langCode, locale, t;
 
 let viewYear, viewMonth;
 let selectedDate    = null;
@@ -402,4 +400,10 @@ function minsToTime(m) {
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-init();
+const stor = typeof browser !== 'undefined' ? browser.storage.local : chrome.storage.local;
+stor.get('lang').then(result => {
+  langCode = result.lang || (navigator.language || 'en').slice(0, 2).toLowerCase();
+  locale   = { pl: 'pl-PL', en: 'en-US', de: 'de-DE', fr: 'fr-FR' }[langCode] || 'en-US';
+  t        = LANG[langCode] || LANG['en'];
+  init();
+});

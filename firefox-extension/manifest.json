@@ -21,8 +21,14 @@
     }
   },
 
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+
   "permissions": [
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
 
   "browser_specific_settings": {
