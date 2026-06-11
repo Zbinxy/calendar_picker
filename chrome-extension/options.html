@@ -10,7 +10,7 @@
       background: #0f1117;
       color: #e2e8f0;
       padding: 24px;
-      min-width: 280px;
+      min-width: 220px;
     }
     h2 {
       font-size: 0.95rem;
@@ -18,55 +18,39 @@
       color: #a78bfa;
       margin-bottom: 16px;
     }
-    label {
-      display: block;
-      font-size: 0.82rem;
-      color: #9ca3af;
-      margin-bottom: 6px;
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    select {
-      background: #2d3148;
-      border: 1px solid #3d4268;
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
       color: #e2e8f0;
-      border-radius: 8px;
-      padding: 7px 10px;
-      font-size: 0.85rem;
-      width: 100%;
       cursor: pointer;
-      outline: none;
-      margin-bottom: 14px;
-    }
-    select:focus { border-color: #7c3aed; }
-    .row { display: flex; align-items: center; gap: 12px; }
-    button {
-      background: #7c3aed;
-      border: none;
-      color: #fff;
-      padding: 9px 20px;
+      padding: 8px 12px;
       border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: background 0.15s;
+      border: 1px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
     }
-    button:hover { background: #6d28d9; }
-    #status { font-size: 0.8rem; color: #059669; }
+    .radio-group label:hover { background: #1e2235; border-color: #3d4268; }
+    .radio-group input[type="radio"] { accent-color: #7c3aed; width: 15px; height: 15px; cursor: pointer; }
+    .radio-group input[type="radio"]:checked + span { color: #a78bfa; font-weight: 600; }
+    #status { font-size: 0.75rem; color: #059669; margin-top: 14px; min-height: 1.2em; }
   </style>
 </head>
 <body>
   <h2>Language / Język / Sprache / Langue</h2>
-  <label for="langSelect">Display language:</label>
-  <select id="langSelect">
-    <option value="">Auto (browser default)</option>
-    <option value="pl">Polski</option>
-    <option value="en">English</option>
-    <option value="de">Deutsch</option>
-    <option value="fr">Français</option>
-  </select>
-  <div class="row">
-    <button id="saveBtn">Save</button>
-    <span id="status"></span>
+  <div class="radio-group">
+    <label><input type="radio" name="lang" value=""> <span>Auto (browser default)</span></label>
+    <label><input type="radio" name="lang" value="pl"> <span>Polski</span></label>
+    <label><input type="radio" name="lang" value="en"> <span>English</span></label>
+    <label><input type="radio" name="lang" value="de"> <span>Deutsch</span></label>
+    <label><input type="radio" name="lang" value="fr"> <span>Français</span></label>
   </div>
+  <div id="status"></div>
   <script src="options.js"></script>
 </body>
 </html>
