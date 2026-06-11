@@ -168,28 +168,27 @@
     .time-scroll::-webkit-scrollbar { width: 4px; }
     .time-scroll::-webkit-scrollbar-thumb { background: #3d4268; border-radius: 4px; }
 
-    .time-slot {
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      color: #9ca3af;
-      transition: background 0.12s, color 0.12s;
+    .time-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      gap: 3px;
+      margin-bottom: 3px;
     }
 
+    .time-slot {
+      flex: 1;
+      text-align: center;
+      padding: 6px 2px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: #6b7280;
+      transition: background 0.12s, color 0.12s;
+      user-select: none;
+    }
+
+    .time-slot.hour-start { font-weight: 700; color: #9ca3af; }
     .time-slot:hover { background: #2d3148; color: #e2e8f0; }
-
-    .time-slot.selected {
-      background: #7c3aed;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .time-slot .hour-label { font-weight: 700; font-size: 0.95rem; }
+    .time-slot.selected { background: #7c3aed; color: #fff; font-weight: 600; }
 
     /* ── DURATION ── */
     .duration-row {
@@ -602,28 +601,18 @@
     const container = document.getElementById('timeScroll');
     container.innerHTML = '';
     for (let h = 6; h <= 22; h++) {
+      const row = document.createElement('div');
+      row.className = 'time-row';
       for (let m = 0; m < 60; m += 15) {
         const minutes = h * 60 + m;
         const slot = document.createElement('div');
-        slot.className = 'time-slot';
+        slot.className = 'time-slot' + (m === 0 ? ' hour-start' : '');
         slot.dataset.minutes = minutes;
-
-        const hourSpan = document.createElement('span');
-        hourSpan.className = 'hour-label';
-        hourSpan.textContent = pad(h) + ':' + pad(m);
-        slot.appendChild(hourSpan);
-
-        if (m !== 0) {
-          slot.style.paddingTop = '4px';
-          slot.style.paddingBottom = '4px';
-          hourSpan.style.fontWeight = '400';
-          hourSpan.style.fontSize = '0.82rem';
-          hourSpan.style.color = '#6b7280';
-        }
-
+        slot.textContent = pad(h) + ':' + pad(m);
         slot.addEventListener('click', () => selectTime(minutes, slot));
-        container.appendChild(slot);
+        row.appendChild(slot);
       }
+      container.appendChild(row);
     }
   }
 

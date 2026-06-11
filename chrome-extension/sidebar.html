@@ -119,22 +119,27 @@
     .time-scroll::-webkit-scrollbar { width: 4px; }
     .time-scroll::-webkit-scrollbar-thumb { background: #3d4268; border-radius: 4px; }
 
-    .time-slot {
-      padding: 6px 10px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      color: #9ca3af;
-      transition: background 0.12s, color 0.12s;
+    .time-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      gap: 2px;
+      margin-bottom: 2px;
     }
 
+    .time-slot {
+      flex: 1;
+      text-align: center;
+      padding: 5px 1px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.68rem;
+      color: #6b7280;
+      transition: background 0.12s, color 0.12s;
+      user-select: none;
+    }
+
+    .time-slot.hour-start { font-weight: 700; color: #9ca3af; }
     .time-slot:hover { background: #2d3148; color: #e2e8f0; }
     .time-slot.selected { background: #7c3aed; color: #fff; font-weight: 600; }
-    .time-slot .hour-label { font-weight: 700; font-size: 0.88rem; }
 
     /* ── DURATION ── */
     .duration-row {

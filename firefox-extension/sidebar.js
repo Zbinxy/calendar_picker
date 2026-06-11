@@ -177,28 +177,18 @@ function renderTimeSlots() {
   const container = document.getElementById('timeScroll');
   container.innerHTML = '';
   for (let h = 6; h <= 22; h++) {
+    const row = document.createElement('div');
+    row.className = 'time-row';
     for (let m = 0; m < 60; m += 15) {
       const minutes = h * 60 + m;
       const slot = document.createElement('div');
-      slot.className = 'time-slot';
+      slot.className = 'time-slot' + (m === 0 ? ' hour-start' : '');
       slot.dataset.minutes = minutes;
-
-      const hourSpan = document.createElement('span');
-      hourSpan.className = 'hour-label';
-      hourSpan.textContent = pad(h) + ':' + pad(m);
-      slot.appendChild(hourSpan);
-
-      if (m !== 0) {
-        slot.style.paddingTop    = '3px';
-        slot.style.paddingBottom = '3px';
-        hourSpan.style.fontWeight  = '400';
-        hourSpan.style.fontSize    = '0.78rem';
-        hourSpan.style.color       = '#6b7280';
-      }
-
+      slot.textContent = pad(h) + ':' + pad(m);
       slot.addEventListener('click', () => selectTime(minutes, slot));
-      container.appendChild(slot);
+      row.appendChild(slot);
     }
+    container.appendChild(row);
   }
 }
 
