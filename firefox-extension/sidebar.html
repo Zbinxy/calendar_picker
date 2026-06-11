@@ -293,6 +293,33 @@
       transition: background 0.15s;
     }
     .aggregate-btn:hover { background: #3d4268; }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-actions .copy-btn { width: auto; flex: 1; }
+
+    .format-btns { display: flex; gap: 3px; flex-shrink: 0; }
+
+    .fmt-btn {
+      background: #2d3148;
+      border: 1px solid #3d4268;
+      color: #9ca3af;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .fmt-btn:hover { background: #3d4268; color: #e2e8f0; }
+    .fmt-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+    .fmt-btn.strike-btn { text-decoration: line-through; }
+    .fmt-btn.strike-btn.active { background: #be123c; border-color: #be123c; color: #fff; }
   </style>
 </head>
 <body>
@@ -342,7 +369,16 @@
       <button class="aggregate-btn" id="aggregateBtn">Agreguj</button>
     </div>
 
-    <button class="copy-btn" id="copyBtn" disabled>Kopiuj</button>
+    <div class="result-actions">
+      <div class="format-btns">
+        <button class="fmt-btn" data-fmt="h1" title="Huge (Gmail Huge)">H1</button>
+        <button class="fmt-btn active" data-fmt="h2" title="Large (Gmail Large)">H2</button>
+        <button class="fmt-btn" data-fmt="p" title="Paragraph">P</button>
+        <button class="fmt-btn" data-fmt="n" title="Normal (bez formatowania)">N</button>
+        <button class="fmt-btn strike-btn" id="strikeBtn" title="Przekreślenie">S</button>
+      </div>
+      <button class="copy-btn" id="copyBtn" disabled>Kopiuj</button>
+    </div>
   </div>
 
 </div>

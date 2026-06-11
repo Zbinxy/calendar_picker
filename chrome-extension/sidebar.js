@@ -8,10 +8,12 @@ const DAYS_PL = [
 ];
 
 let viewYear, viewMonth;
-let selectedDate   = null;
+let selectedDate    = null;
 let selectedMinutes = null;
-let stack          = [];
-let aggregateLevel = 0;
+let currentFormat   = 'h2';
+let strikethrough   = false;
+let stack           = [];
+let aggregateLevel  = 0;
 
 const today = new Date();
 
@@ -26,6 +28,21 @@ function init() {
   document.getElementById('copyBtn').addEventListener('click', copyResult);
   document.getElementById('addBtn').addEventListener('click', addToStack);
   document.getElementById('aggregateBtn').addEventListener('click', aggregate);
+  document.querySelectorAll('.fmt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFormat = btn.dataset.fmt;
+      document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateResult();
+      if (stack.length > 0) applyPreviewFormat(document.getElementById('stackOutput'));
+    });
+  });
+  document.getElementById('strikeBtn').addEventListener('click', () => {
+    strikethrough = !strikethrough;
+    document.getElementById('strikeBtn').classList.toggle('active', strikethrough);
+    updateResult();
+    if (stack.length > 0) applyPreviewFormat(document.getElementById('stackOutput'));
+  });
 }
 
 function shiftMonth(delta) {
@@ -124,58 +141,79 @@ function selectTime(minutes, el) {
   updateResult();
 }
 
+function applyPreviewFormat(el) {
+  const sizes   = { h1: '1.3rem',  h2: '1.05rem', p: '0.85rem', n: '0.75rem' };
+  const weights = { h1: '700',     h2: '700',      p: '400',     n: '400'     };
+  const opacity = { h1: '1',       h2: '1',        p: '0.85',    n: '0.6'    };
+  el.style.fontSize       = sizes[currentFormat];
+  el.style.fontWeight     = weights[currentFormat];
+  el.style.opacity        = opacity[currentFormat];
+  el.style.textDecoration = strikethrough ? 'line-through' : '';
+}
+
 function updateResult() {
   const resultEl = document.getElementById('resultText');
   const addBtn   = document.getElementById('addBtn');
 
-  if (!selectedDate || selectedMinutes === null) {
+  if (!selectedDate) {
     resultEl.innerHTML = '<span class="result-placeholder">Wybierz datę i godzinę…</span>';
+    resultEl.style.fontSize = '';
+    resultEl.style.fontWeight = '';
+    resultEl.style.opacity = '';
+    resultEl.style.textDecoration = '';
     addBtn.disabled = true;
     updateCopyBtn();
     return;
   }
 
   const { year, month, day } = selectedDate;
-  const dow      = new Date(year, month, day).getDay();
-  const dayName  = DAYS_PL[dow];
-  const duration = parseInt(document.getElementById('durationSelect').value, 10);
-  const startStr = minsToTime(selectedMinutes);
-  const endStr   = minsToTime(selectedMinutes + duration);
-  const dateStr  = pad(day) + '.' + pad(month + 1) + '.' + year;
+  const dow     = new Date(year, month, day).getDay();
+  const dayName = DAYS_PL[dow];
+  const dateStr = pad(day) + '.' + pad(month + 1) + '.' + year;
 
-  resultEl.textContent = `${dateStr} (${dayName}) ${startStr}-${endStr}`;
+  if (selectedMinutes !== null) {
+    const duration = parseInt(document.getElementById('durationSelect').value, 10);
+    resultEl.textContent = `${dateStr} (${dayName}) ${minsToTime(selectedMinutes)}-${minsToTime(selectedMinutes + duration)}`;
+  } else {
+    resultEl.textContent = `${dateStr} (${dayName})`;
+  }
+
+  applyPreviewFormat(resultEl);
   addBtn.disabled = stack.length >= 10;
   updateCopyBtn();
 }
 
 function updateCopyBtn() {
   const copyBtn = document.getElementById('copyBtn');
-  copyBtn.disabled = !(stack.length > 0 || (selectedDate && selectedMinutes !== null));
+  copyBtn.disabled = !(stack.length > 0 || selectedDate !== null);
+  if (!copyBtn.disabled) { copyBtn.textContent = 'Kopiuj'; copyBtn.classList.remove('copied'); }
 }
 
 /* ── STACK ── */
 
 function addToStack() {
-  if (!selectedDate || selectedMinutes === null || stack.length >= 10) return;
-
+  if (!selectedDate || stack.length >= 10) return;
   const { year, month, day } = selectedDate;
-  const dow      = new Date(year, month, day).getDay();
-  const duration = parseInt(document.getElementById('durationSelect').value, 10);
-
-  stack.push({
-    year, month, day,
-    dateStr:      pad(day) + '.' + pad(month + 1) + '.' + year,
-    dayName:      DAYS_PL[dow],
-    startMinutes: selectedMinutes,
-    startStr:     minsToTime(selectedMinutes),
-    endStr:       minsToTime(selectedMinutes + duration)
-  });
-
+  const dow     = new Date(year, month, day).getDay();
+  const dateStr = pad(day) + '.' + pad(month + 1) + '.' + year;
+  const dayName = DAYS_PL[dow];
+  let entry;
+  if (selectedMinutes !== null) {
+    const duration = parseInt(document.getElementById('durationSelect').value, 10);
+    entry = {
+      year, month, day, dateStr, dayName,
+      startMinutes: selectedMinutes,
+      startStr:     minsToTime(selectedMinutes),
+      endStr:       minsToTime(selectedMinutes + duration)
+    };
+  } else {
+    entry = { year, month, day, dateStr, dayName, startMinutes: -1, startStr: null, endStr: null };
+  }
+  stack.push(entry);
   stack.sort((a, b) => {
     const dd = new Date(a.year, a.month, a.day) - new Date(b.year, b.month, b.day);
     return dd !== 0 ? dd : a.startMinutes - b.startMinutes;
   });
-
   aggregateLevel = 0;
   renderStackSection();
   document.getElementById('addBtn').disabled = stack.length >= 10;
@@ -186,43 +224,35 @@ function removeFromStack(idx) {
   stack.splice(idx, 1);
   if (stack.length === 0) aggregateLevel = 0;
   renderStackSection();
-  if (selectedDate && selectedMinutes !== null)
-    document.getElementById('addBtn').disabled = false;
+  if (selectedDate) document.getElementById('addBtn').disabled = stack.length >= 10;
   updateCopyBtn();
+}
+
+function itemLabel(it, withDay = true, withTime = true, skipDateIfSame = false, lastDate = null) {
+  const time = it.startStr ? ` ${it.startStr}-${it.endStr}` : '';
+  if (skipDateIfSame && it.dateStr === lastDate)
+    return it.startStr ? `${it.startStr}-${it.endStr}` : it.dateStr;
+  return withDay
+    ? `${it.dateStr} (${it.dayName})${withTime ? time : ''}`
+    : `${it.dateStr}${withTime ? time : ''}`;
 }
 
 function getAggregatedText() {
   if (stack.length === 0) return '';
-
   switch (aggregateLevel) {
-    case 0:
-      return stack.map(it =>
-        `${it.dateStr} (${it.dayName}) ${it.startStr}-${it.endStr}`
-      ).join(', ');
-
-    case 1:
-      return stack.map(it =>
-        `${it.dateStr} ${it.startStr}-${it.endStr}`
-      ).join(', ');
-
+    case 0: return stack.map(it => itemLabel(it, true, true)).join(', ');
+    case 1: return stack.map(it => itemLabel(it, false, true)).join(', ');
     case 2: {
-      const parts = [];
-      let lastDate = null;
+      const parts = []; let lastDate = null;
       for (const it of stack) {
-        parts.push(it.dateStr !== lastDate
-          ? `${it.dateStr} ${it.startStr}-${it.endStr}`
-          : `${it.startStr}-${it.endStr}`);
+        parts.push(itemLabel(it, false, true, true, lastDate));
         lastDate = it.dateStr;
       }
       return parts.join(', ');
     }
-
-    case 3:
-      return [...new Set(stack.map(it => it.dateStr))].join(', ');
-
-    case 4:
-      return [...new Map(stack.map(it => [it.dateStr, it])).values()]
-        .map(it => `${it.dateStr} (${it.dayName})`).join(', ');
+    case 3: return [...new Set(stack.map(it => it.dateStr))].join(', ');
+    case 4: return [...new Map(stack.map(it => [it.dateStr, it])).values()]
+                    .map(it => `${it.dateStr} (${it.dayName})`).join(', ');
   }
   return '';
 }
@@ -232,19 +262,17 @@ function renderStackSection() {
   const list    = document.getElementById('stackList');
   const output  = document.getElementById('stackOutput');
 
-  if (stack.length === 0) {
-    section.style.display = 'none';
-    return;
-  }
+  if (stack.length === 0) { section.style.display = 'none'; return; }
 
   section.style.display = 'flex';
-
   list.innerHTML = '';
   stack.forEach((it, i) => {
     const el   = document.createElement('div');
     el.className = 'stack-item';
     const span = document.createElement('span');
-    span.textContent = `${it.dateStr} (${it.dayName}) ${it.startStr}-${it.endStr}`;
+    span.textContent = it.startStr
+      ? `${it.dateStr} (${it.dayName}) ${it.startStr}-${it.endStr}`
+      : `${it.dateStr} (${it.dayName})`;
     const btn  = document.createElement('button');
     btn.className   = 'stack-remove';
     btn.textContent = '×';
@@ -255,6 +283,7 @@ function renderStackSection() {
   });
 
   output.textContent = getAggregatedText();
+  applyPreviewFormat(output);
 }
 
 function aggregate() {
@@ -266,17 +295,30 @@ function aggregate() {
 /* ── COPY ── */
 
 function copyResult() {
-  const btn  = document.getElementById('copyBtn');
   const text = stack.length > 0
     ? document.getElementById('stackOutput').textContent
     : document.getElementById('resultText').textContent;
 
-  const html = `<font size="4">${text}</font>`;
-  const item = new ClipboardItem({
-    'text/html':  new Blob([html],  { type: 'text/html' }),
-    'text/plain': new Blob([text], { type: 'text/plain' }),
-  });
-  navigator.clipboard.write([item]).then(() => {
+  const wrap = (inner) => strikethrough ? `<s>${inner}</s>` : inner;
+  const htmlMap = {
+    h1: wrap(`<font size="6">${text}</font>`),
+    h2: wrap(`<font size="4">${text}</font>`),
+    p:  wrap(`<font size="3">${text}</font>`),
+    n:  wrap(text),
+  };
+
+  const btn = document.getElementById('copyBtn');
+  let promise;
+  if (currentFormat === 'n' && !strikethrough) {
+    promise = navigator.clipboard.writeText(text);
+  } else {
+    const item = new ClipboardItem({
+      'text/html':  new Blob([htmlMap[currentFormat]], { type: 'text/html' }),
+      'text/plain': new Blob([text], { type: 'text/plain' }),
+    });
+    promise = navigator.clipboard.write([item]);
+  }
+  promise.then(() => {
     btn.textContent = 'Skopiowano!';
     btn.classList.add('copied');
     setTimeout(() => {
